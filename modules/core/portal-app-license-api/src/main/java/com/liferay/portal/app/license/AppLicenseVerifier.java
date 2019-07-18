@@ -20,9 +20,6 @@ import org.osgi.framework.Bundle;
  * @author Amos Fong
  */
 public interface AppLicenseVerifier {
-	/*
-		pull request test
-	 */
 
 	public void verify(
 			Bundle bundle, String productId, String productType,
