@@ -35,7 +35,6 @@ import com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalServiceUtil;
 import com.liferay.portal.kernel.settings.GroupServiceSettingsLocator;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
-import org.osgi.service.component.annotations.Reference;
 
 import java.util.Locale;
 
@@ -76,18 +75,10 @@ public class DefaultCommentTreeDisplayContext
 		return publishButtonLabel;
 	}
 
-	private CommentGroupServiceConfiguration
-	_getCommentGroupServiceConfiguration(long groupId)
-		throws ConfigurationException {
-
-		return ConfigurationProviderUtil.getConfiguration(
-			CommentGroupServiceConfiguration.class,
-			new GroupServiceSettingsLocator(groupId, MBConstants.SERVICE_NAME));
-	}
-
 	@Override
 	public boolean isActionControlsVisible() throws PortalException {
-		long groupId =_discussionRequestHelper.getScopeGroupId();
+		long groupId = _discussionRequestHelper.getScopeGroupId();
+
 		CommentGroupServiceConfiguration commentGroupServiceConfiguration =
 			_getCommentGroupServiceConfiguration(groupId);
 
@@ -99,7 +90,7 @@ public class DefaultCommentTreeDisplayContext
 			commentGroupServiceConfiguration.
 				enableOwnersToDeleteOtherUserComments();
 
-		if ((_discussionComment == null) || !(editComment || deleteComment ) ||
+		if ((_discussionComment == null) || !(editComment || deleteComment) ||
 			_discussionTaglibHelper.isHideControls() || _isStagingGroup()) {
 
 			return false;
@@ -273,6 +264,15 @@ public class DefaultCommentTreeDisplayContext
 
 		return permissionChecker.isGroupAdmin(
 			_discussionRequestHelper.getScopeGroupId());
+	}
+
+	private CommentGroupServiceConfiguration
+			_getCommentGroupServiceConfiguration(long groupId)
+		throws ConfigurationException {
+
+		return ConfigurationProviderUtil.getConfiguration(
+			CommentGroupServiceConfiguration.class,
+			new GroupServiceSettingsLocator(groupId, MBConstants.SERVICE_NAME));
 	}
 
 	private boolean _isStagingGroup() {
