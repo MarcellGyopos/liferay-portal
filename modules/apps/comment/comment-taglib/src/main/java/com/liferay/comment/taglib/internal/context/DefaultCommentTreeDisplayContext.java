@@ -28,7 +28,7 @@ import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
+import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalServiceUtil;
@@ -76,14 +76,11 @@ public class DefaultCommentTreeDisplayContext
 		return publishButtonLabel;
 	}
 
-	@Reference
-	protected ConfigurationProvider configurationProvider;
-
 	private CommentGroupServiceConfiguration
 	_getCommentGroupServiceConfiguration(long groupId)
 		throws ConfigurationException {
 
-		return configurationProvider.getConfiguration(
+		return ConfigurationProviderUtil.getConfiguration(
 			CommentGroupServiceConfiguration.class,
 			new GroupServiceSettingsLocator(groupId, MBConstants.SERVICE_NAME));
 	}
