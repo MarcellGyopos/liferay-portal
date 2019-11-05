@@ -32,6 +32,9 @@ import com.liferay.portal.kernel.util.Validator;
 
 import java.io.Serializable;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -204,13 +207,30 @@ public class FieldsToDDMFormValuesConverterImpl
 
 		Serializable fieldValue = ddmField.getValue(locale, index);
 
+		String fieldValueString = String.valueOf(fieldValue);
+
 		if (fieldValue instanceof Date) {
 			Date valueDate = (Date)fieldValue;
 
-			fieldValue = valueDate.getTime();
+			long valueDateInMilliseconds = valueDate.getTime();
+
+			fieldValueString = String.valueOf(valueDateInMilliseconds);
+		}
+		else if (fieldValue instanceof Double) {
+			Double valueDouble = (Double)fieldValue;
+
+			NumberFormat numberFormat = NumberFormat.getInstance(locale);
+
+			if (numberFormat instanceof DecimalFormat) {
+				((DecimalFormat)numberFormat).setDecimalSeparatorAlwaysShown(
+					true);
+				numberFormat.setMinimumFractionDigits(1);
+			}
+
+			fieldValueString = numberFormat.format(valueDouble);
 		}
 
-		return String.valueOf(fieldValue);
+		return fieldValueString;
 	}
 
 	protected List<String> getDDMFormFieldNames(
