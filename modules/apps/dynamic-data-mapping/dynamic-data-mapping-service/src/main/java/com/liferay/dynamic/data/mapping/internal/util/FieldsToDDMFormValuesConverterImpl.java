@@ -226,6 +226,7 @@ public class FieldsToDDMFormValuesConverterImpl
 
 				decimalFormat.setDecimalSeparatorAlwaysShown(true);
 				decimalFormat.setMinimumFractionDigits(1);
+
 				fieldValueString = decimalFormat.format(valueDouble);
 			}
 			else {
