@@ -182,7 +182,9 @@ public class DDMFormValuesToFieldsConverterImpl
 		for (Locale availableLocales : value.getAvailableLocales()) {
 			Serializable serializable = null;
 
-			if (type.equals(FieldConstants.DOUBLE)) {
+			if (type.equals(FieldConstants.DOUBLE) ||
+				type.equals(FieldConstants.NUMBER)) {
+
 				serializable = GetterUtil.getDouble(
 					value.getString(availableLocales), availableLocales);
 			}

@@ -32,6 +32,8 @@ import com.liferay.portal.kernel.util.Validator;
 
 import java.io.Serializable;
 
+import java.math.BigDecimal;
+
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
@@ -216,18 +218,34 @@ public class FieldsToDDMFormValuesConverterImpl
 
 			fieldValueString = String.valueOf(valueDateInMilliseconds);
 		}
-		else if (fieldValue instanceof Double) {
-			Double valueDouble = (Double)fieldValue;
+		else if (fieldValue instanceof BigDecimal ||
+				 fieldValue instanceof Double) {
+
+			Double valueDouble = null;
+
+			if (fieldValue instanceof BigDecimal) {
+				BigDecimal bd = (BigDecimal)fieldValue;
+
+				valueDouble = bd.doubleValue();
+			}
+			else {
+				valueDouble = (Double)fieldValue;
+			}
 
 			NumberFormat numberFormat = NumberFormat.getInstance(locale);
 
 			if (numberFormat instanceof DecimalFormat) {
-				((DecimalFormat)numberFormat).setDecimalSeparatorAlwaysShown(
-					true);
-				numberFormat.setMinimumFractionDigits(1);
-			}
+				DecimalFormat decimalFormat = (DecimalFormat)numberFormat;
 
-			fieldValueString = numberFormat.format(valueDouble);
+				decimalFormat.setDecimalSeparatorAlwaysShown(true);
+
+				decimalFormat.setMinimumFractionDigits(1);
+
+				fieldValueString = decimalFormat.format(valueDouble);
+			}
+			else {
+				fieldValueString = numberFormat.format(valueDouble);
+			}
 		}
 
 		return fieldValueString;
