@@ -545,6 +545,39 @@ public class GetterUtil {
 		return defaultValue;
 	}
 
+	public static Number get(String value, Number defaultValue, Locale locale) {
+		if (value == null) {
+			return defaultValue;
+		}
+
+		value = value.trim();
+
+		if (locale == null) {
+			try {
+				return NumberFormat.getInstance().parse(value);
+			}
+			catch (Exception e) {
+			}
+		}
+		else {
+			NumberFormat numberFormat = NumberFormat.getInstance(locale);
+
+			try {
+				ParsePosition parsePosition = new ParsePosition(0);
+
+				Number number = numberFormat.parse(value, parsePosition);
+
+				if (parsePosition.getIndex() == value.length()) {
+					return number;
+				}
+			}
+			catch (Exception e) {
+			}
+		}
+
+		return defaultValue;
+	}
+
 	/**
 	 * Returns the String value as a float. If the value is <code>null</code> or
 	 * not convertible to a float, the default value is returned.
@@ -1591,6 +1624,11 @@ public class GetterUtil {
 	public static Number getNumber(String value, Number defaultValue) {
 		return get(value, defaultValue);
 	}
+
+	public static Number getNumber(String value, Locale locale) {
+		return get(value, DEFAULT_NUMBER, locale);
+	}
+
 
 	/**
 	 * Returns the Object value as a Number array. If the value is
