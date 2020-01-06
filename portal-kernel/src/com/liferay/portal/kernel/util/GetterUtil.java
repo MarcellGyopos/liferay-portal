@@ -1625,7 +1625,7 @@ public class GetterUtil {
 		return get(value, defaultValue);
 	}
 
-	public static Number getNumber(String value, Locale locale) {
+	public static Number getNumber(String value, Locale locale, boolean b) {
 		return get(value, DEFAULT_NUMBER, locale);
 	}
 
