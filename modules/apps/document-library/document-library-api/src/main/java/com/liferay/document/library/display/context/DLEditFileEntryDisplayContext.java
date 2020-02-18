@@ -69,4 +69,8 @@ public interface DLEditFileEntryDisplayContext extends DLDisplayContext {
 
 	public boolean isVersionInfoVisible() throws PortalException;
 
+	public String getDefaultDDMFormLanguageId() throws PortalException;
+
+	public String getDefaultLanguageId() throws PortalException;
+
 }

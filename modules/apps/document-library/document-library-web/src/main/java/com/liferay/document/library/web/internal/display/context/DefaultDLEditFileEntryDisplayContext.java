@@ -31,14 +31,21 @@ import com.liferay.dynamic.data.mapping.storage.StorageEngine;
 import com.liferay.portal.kernel.bean.BeanParamUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.upload.UploadServletRequestConfigurationHelperUtil;
+import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.util.RepositoryUtil;
 
+import java.util.Locale;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
@@ -300,6 +307,63 @@ public class DefaultDLEditFileEntryDisplayContext
 		}
 	}
 
+	public long getGroupId() {
+		if (_groupId != null) {
+			return _groupId;
+		}
+
+		_groupId = BeanParamUtil.getLong(
+			_fileEntry, _dlRequestHelper.getRequest(), "groupId",
+			_themeDisplay.getScopeGroupId());
+
+		return _groupId;
+	}
+
+	@Override
+	public String getDefaultDDMFormLanguageId() throws PortalException {
+		Locale siteDefaultLocale = null;
+
+		try {
+			siteDefaultLocale = PortalUtil.getSiteDefaultLocale(getGroupId());
+		}
+		catch (PortalException portalException) {
+			_log.error(portalException, portalException);
+
+			siteDefaultLocale = LocaleUtil.getSiteDefault();
+		}
+
+		if (_dlFileEntryType == null) {
+			return LocaleUtil.toLanguageId(siteDefaultLocale);
+		}
+
+		return LocalizationUtil.getDefaultLanguageId(
+			_dlFileEntryType.getDefaultLanguageId(), siteDefaultLocale);
+	}
+
+
+	@Override
+	public String getDefaultLanguageId() throws PortalException {
+		if (Validator.isNotNull(_defaultLanguageId)) {
+			return _defaultLanguageId;
+		}
+
+		_defaultLanguageId = ParamUtil.getString(
+			_dlRequestHelper.getRequest(), "languageId");
+
+		if (Validator.isNotNull(_defaultLanguageId)) {
+			return _defaultLanguageId;
+		}
+
+		_defaultLanguageId = getDefaultDDMFormLanguageId();
+
+		return _defaultLanguageId;
+	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		DefaultDLEditFileEntryDisplayContext.class);
+
+
+
 	private static final UUID _UUID = UUID.fromString(
 		"63326141-02F6-42B5-AE38-ABC73FA72BB5");
 
@@ -313,5 +377,8 @@ public class DefaultDLEditFileEntryDisplayContext
 		_fileVersionDisplayContextHelper;
 	private final boolean _showSelectFolder;
 	private final StorageEngine _storageEngine;
+	private String _defaultLanguageId;
+	private Long _groupId;
+	private ThemeDisplay _themeDisplay;
 
 }

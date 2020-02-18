@@ -415,6 +415,8 @@ renderResponse.setTitle(headerTitle);
 													groupId="<%= (fileEntry != null) ? fileEntry.getGroupId() : 0 %>"
 													localizable="<%= localizable %>"
 													requestedLocale="<%= locale %>"
+													defaultEditLocale="<%=  LocaleUtil.fromLanguageId(dlEditFileEntryDisplayContext.getDefaultLanguageId()) %>"
+													defaultLocale="<%= LocaleUtil.fromLanguageId(dlEditFileEntryDisplayContext.getDefaultDDMFormLanguageId()) %>"
 												/>
 											</c:otherwise>
 										</c:choose>

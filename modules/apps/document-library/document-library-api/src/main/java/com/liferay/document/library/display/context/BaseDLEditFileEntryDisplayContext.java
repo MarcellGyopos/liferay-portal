@@ -180,6 +180,16 @@ public class BaseDLEditFileEntryDisplayContext
 		return parentDisplayContext.isVersionInfoVisible();
 	}
 
+	@Override
+	public String getDefaultDDMFormLanguageId() throws PortalException {
+		return parentDisplayContext.getDefaultDDMFormLanguageId();
+	}
+
+	@Override
+	public String getDefaultLanguageId() throws PortalException {
+		return parentDisplayContext.getDefaultLanguageId();
+	}
+
 	protected DLFileEntryType dlFileEntryType;
 	protected FileEntry fileEntry;
 
