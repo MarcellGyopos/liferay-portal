@@ -406,6 +406,7 @@ renderResponse.setTitle(headerTitle);
 													classNameId="<%= PortalUtil.getClassNameId(com.liferay.dynamic.data.mapping.model.DDMStructure.class) %>"
 													classPK="<%= ddmStructure.getPrimaryKey() %>"
 													ddmFormValues="<%= ddmFormValues %>"
+													defaultLocale="<%= LocaleUtil.fromLanguageId(ddmStructure.getDefaultLanguageId()) %>"
 													fieldsNamespace="<%= String.valueOf(ddmStructure.getPrimaryKey()) %>"
 													groupId="<%= (fileEntry != null) ? fileEntry.getGroupId() : 0 %>"
 													localizable="<%= localizable %>"
