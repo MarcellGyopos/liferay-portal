@@ -137,7 +137,6 @@ BlogsPortletInstanceConfiguration blogsPortletInstanceConfiguration = BlogsPortl
 
 				<c:choose>
 					<c:when test="<%= blogsPortletInstanceConfiguration.displayStyle().equals(BlogsUtil.DISPLAY_STYLE_ABSTRACT) %>">
-
 						<c:if test="<%= entry.isSmallImage() && Validator.isNull(coverImageURL) %>">
 							<div class="asset-small-image">
 								<img alt="" class="asset-small-image img-thumbnail" src="<%= HtmlUtil.escape(entry.getSmallImageURL(themeDisplay)) %>" width="150" />
