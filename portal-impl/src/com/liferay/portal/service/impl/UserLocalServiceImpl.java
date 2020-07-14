@@ -28,8 +28,14 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.cache.PortalCache;
 import com.liferay.portal.kernel.cache.PortalCacheMapSynchronizeUtil;
+import com.liferay.portal.kernel.dao.orm.Criterion;
+import com.liferay.portal.kernel.dao.orm.DynamicQuery;
+import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
+import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
+import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.WildcardMode;
 import com.liferay.portal.kernel.exception.CompanyMaxUsersException;
 import com.liferay.portal.kernel.exception.ContactBirthdayException;
@@ -68,6 +74,7 @@ import com.liferay.portal.kernel.model.Contact;
 import com.liferay.portal.kernel.model.ContactConstants;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
+import com.liferay.portal.kernel.model.Groups_UserGroupsTable;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.PasswordPolicy;
@@ -126,6 +133,7 @@ import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PwdGenerator;
@@ -150,6 +158,7 @@ import com.liferay.portal.security.pwd.PwdAuthenticator;
 import com.liferay.portal.security.pwd.PwdToolkitUtil;
 import com.liferay.portal.security.pwd.RegExpToolkit;
 import com.liferay.portal.service.base.UserLocalServiceBaseImpl;
+import com.liferay.portal.service.persistence.impl.UserGroupPersistenceImpl;
 import com.liferay.portal.util.PrefsPropsUtil;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.registry.Registry;
@@ -3866,6 +3875,55 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		reindex(updateUserIds);
 	}
 
+	public void test(long userGroupId, long[] userIds) throws PortalException {
+		UserGroup userGroup = null;
+
+		try {
+			userGroup = userGroupLocalService.getUserGroup(userGroupId);
+		}
+		catch (PortalException exception) {
+			_log.error(exception, exception);
+		}
+
+		List<Group> groups = groupLocalService.getGroups(
+			userGroup.getCompanyId(), 0, true);
+
+		//groupIds tartalmazza az összes site groupIdját
+		List<Long> groupIds = null;
+
+		for (Group g : groups) {
+			groupIds.add(g.getGroupId());
+		}
+		//végigmegyek a usereken és azon belül minden siteon
+
+		for (int i = 0; i < userIds.length; i++) {
+			for (Long g : groupIds) {
+				//lekérem a user groupjait az adott sitehoz
+				List<UserGroup> userGroups =
+					userGroupLocalService.getGroupUserUserGroups(g, userIds[i]);
+				//ha az ügyfélnek csak 1 usergroupja van és az egyezik azzal amiből törölni akarunk
+				//akkor töröljük a groupból reindexelünk és tötöljük a subrciptiont
+
+				if ((userGroups.size() < 2) &&
+					(userGroups.get(0).getGroupId() == userGroupId)) {
+
+					long[] userIdsTemp = {userIds[i]};
+
+					unsetGroupUsers(g,userIdsTemp,null);
+
+				}
+				//ha több van neki akkor csak az adott groupból törüljük a
+
+				// subcription marad, más group általi jog miatt
+
+				else {
+					userGroupPersistence.removeUser(g, userIds[i]);
+					reindex(userIds);
+				}
+			}
+		}
+	}
+
 	/**
 	 * Removes the users from the teams of a group.
 	 *
@@ -4058,12 +4116,84 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 	 * @param userIds the primary keys of the users
 	 */
 	@Override
-	public void unsetUserGroupUsers(long userGroupId, long[] userIds)
-		throws PortalException {
+	public void unsetUserGroupUsers(long userGroupId, long[] userIds) throws PortalException {
+		UserGroup userGroup = null;
+		List<Group> groups = null;
+		List<UserGroup> userGroupIds=null;
+		long[] groupIds = null;
 
-		userGroupPersistence.removeUsers(userGroupId, userIds);
+		for(long userId: userIds){
+			userGroupIds = userGroupLocalService.getUserUserGroups(userId);
+		}
+		for(UserGroup ue: userGroupIds){
+			groupIds = userGroupLocalService.getGroupPrimaryKeys(ue.getUserGroupId());
+		}
+		
 
-		reindex(userIds);
+
+
+
+
+
+		for (int i = 0; j < groupIds.length; i++) {
+			if (userGroupLocalService.hasGroupUserGroup(groupIds[j],userGroupId)){
+
+			}
+
+		}
+/*
+
+
+		try {
+			userGroup = userGroupLocalService.getUserGroup(userGroupId);
+			groups = groupLocalService.getGroups(
+				userGroup.getCompanyId(), 0, true);
+
+			List<Long> groupIds = null;
+
+			System.out.println("groupsize:"+groups.size());
+			for (Group g : groups) {
+				groupIds.add((long)g.getGroupId());
+			}
+
+
+			//végigmegyek a usereken és azon belül minden siteon
+
+			for (int i = 0; i < userIds.length; i++) {
+				for (Long g : groupIds) {
+					//lekérem a user groupjait az adott sitehoz
+					List<UserGroup> userGroups =
+						userGroupLocalService.getGroupUserUserGroups(g, userIds[i]);
+					//ha az ügyfélnek csak 1 usergroupja van és az egyezik azzal amiből törölni akarunk
+					//akkor töröljük a groupból reindexelünk és tötöljük a subrciptiont
+
+					if ((userGroups.size() < 2) &&
+						(userGroups.get(0).getGroupId() == userGroupId)) {
+
+						long[] userIdsTemp = {userIds[i]};
+
+						unsetGroupUsers(g,userIdsTemp,null);
+
+					}
+					//ha több van neki akkor csak az adott groupból törüljük a
+
+					// subcription marad, más group általi jog miatt
+
+					else {
+						userGroupPersistence.removeUser(g, userIds[i]);
+						reindex(userIds);
+					}
+				}
+			}
+		}
+		catch (PortalException exception) {
+			_log.error(exception, exception);
+		}
+
+
+
+ */
+
 	}
 
 	/**
