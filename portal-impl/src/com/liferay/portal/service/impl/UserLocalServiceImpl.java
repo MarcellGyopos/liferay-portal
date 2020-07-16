@@ -175,6 +175,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.LongStream;
 
 import javax.mail.internet.InternetAddress;
 
@@ -4031,9 +4032,46 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 	public void unsetUserGroupUsers(long userGroupId, long[] userIds)
 		throws PortalException {
 
-		userGroupPersistence.removeUsers(userGroupId, userIds);
+		long[] sites = userGroupLocalService.getGroupPrimaryKeys(userGroupId);
 
-		reindex(userIds);
+		for (long userId : userIds) {
+			Map<Long, long[]> userGroupGroupIds = new HashMap();
+			List<UserGroup> userGroups =
+				userGroupLocalService.getUserUserGroups(userId);
+			long[] userIdsTemp = {userId};
+
+			for (UserGroup ug : userGroups) {
+				if (ug.getUserGroupId() != userGroupId) {
+					userGroupGroupIds.put(
+						ug.getPrimaryKey(),
+						userGroupLocalService.getGroupPrimaryKeys(
+							ug.getUserGroupId()));
+				}
+			}
+
+			for (long s : sites) {
+				boolean isSiteContainsGroup = false;
+
+				for (Map.Entry<Long, long[]> entry :
+					userGroupGroupIds.entrySet()) {
+
+					if (LongStream.of(entry.getValue()).anyMatch(x -> x == s)) {
+						isSiteContainsGroup = true;
+					}
+				}
+
+				long[] groupIdUserIds = getGroupUserIds(s);
+
+				if (!isSiteContainsGroup &&
+					!LongStream.of(groupIdUserIds).anyMatch(x -> x == userId)) {
+
+					unsetGroupUsers(s, userIdsTemp, null);
+				}
+			}
+
+			userGroupPersistence.removeUser(userGroupId, userId);
+			reindex(userIds);
+		}
 	}
 
 	/**
