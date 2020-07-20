@@ -4035,7 +4035,7 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		long[] sites = userGroupLocalService.getGroupPrimaryKeys(userGroupId);
 
 		for (long userId : userIds) {
-			Map<Long, long[]> userGroupGroupIds = new HashMap();
+			Map<Long, long[]> userGroupGroupIds = new HashMap<>();
 			List<UserGroup> userGroups =
 				userGroupLocalService.getUserUserGroups(userId);
 			long[] userIdsTemp = {userId};
@@ -4050,19 +4050,19 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 			}
 
 			for (long s : sites) {
-				boolean isSiteContainsGroup = false;
+				boolean siteContainsGroup = false;
 
 				for (Map.Entry<Long, long[]> entry :
-					userGroupGroupIds.entrySet()) {
+						userGroupGroupIds.entrySet()) {
 
 					if (LongStream.of(entry.getValue()).anyMatch(x -> x == s)) {
-						isSiteContainsGroup = true;
+						siteContainsGroup = true;
 					}
 				}
 
 				long[] groupIdUserIds = getGroupUserIds(s);
 
-				if (!isSiteContainsGroup &&
+				if (!siteContainsGroup &&
 					!LongStream.of(groupIdUserIds).anyMatch(x -> x == userId)) {
 
 					unsetGroupUsers(s, userIdsTemp, null);
