@@ -28,13 +28,14 @@ import com.liferay.portal.kernel.model.UserGroup;
 import com.liferay.portal.kernel.service.UserGroupLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.transaction.TransactionCommitCallbackUtil;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.LongStream;
+
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Marcell Gyöpös
@@ -61,7 +62,7 @@ public class UserGroupModelListener extends BaseModelListener<UserGroup> {
 
 		try {
 			if (associationClassName.equals(Group.class.getName())) {
-				unsubscribeGroupFromSite(
+				unsubscribeDeletedGroupFromSite(
 					(long)associationClassPK, (long)userGroupId);
 			}
 		}
@@ -71,19 +72,21 @@ public class UserGroupModelListener extends BaseModelListener<UserGroup> {
 		}
 	}
 
+	public void unsubscribeDeletedGroupFromSite(
+		long groupId, long userGroupId) {
+
+		long[] userIds = _userGroupLocalService.getUserPrimaryKeys(userGroupId);
+		long[] groupIds = {groupId};
+
+		unsubscribeUserFromSite(userGroupId, userIds, groupIds);
+	}
+
 	public void unsubscribeDeletedGroupMemberFromSite(
 		long userId, long userGroupId) {
 
 		long[] groupIds = _userGroupLocalService.getGroupPrimaryKeys(
 			userGroupId);
 		long[] userIds = {userId};
-
-		unsubscribeUserFromSite(userGroupId, userIds, groupIds);
-	}
-
-	public void unsubscribeGroupFromSite(long groupId, long userGroupId) {
-		long[] userIds = _userGroupLocalService.getUserPrimaryKeys(userGroupId);
-		long[] groupIds = {groupId};
 
 		unsubscribeUserFromSite(userGroupId, userIds, groupIds);
 	}
@@ -97,16 +100,16 @@ public class UserGroupModelListener extends BaseModelListener<UserGroup> {
 				_userGroupLocalService.getUserUserGroups(userId);
 			long[] userIdsTemp = {userId};
 
-			for (UserGroup ug : userGroups) {
-				if (ug.getUserGroupId() != userGroupId) {
+			for (UserGroup userGroup : userGroups) {
+				if (userGroup.getUserGroupId() != userGroupId) {
 					userGroupGroupIds.put(
-						ug.getPrimaryKey(),
+						userGroup.getPrimaryKey(),
 						_userGroupLocalService.getGroupPrimaryKeys(
-							ug.getUserGroupId()));
+							userGroup.getUserGroupId()));
 				}
 			}
 
-			for (long s : groupIds) {
+			for (long groupId : groupIds) {
 				boolean siteContainsGroup = false;
 
 				for (Map.Entry<Long, long[]> entry :
@@ -115,14 +118,15 @@ public class UserGroupModelListener extends BaseModelListener<UserGroup> {
 					if (LongStream.of(
 							entry.getValue()
 						).anyMatch(
-							x -> x == s
+							x -> x == groupId
 						)) {
 
 						siteContainsGroup = true;
 					}
 				}
 
-				long[] groupIdUserIds = _userLocalService.getGroupUserIds(s);
+				long[] groupIdUserIds = _userLocalService.getGroupUserIds(
+					groupId);
 
 				if (!siteContainsGroup &&
 					!LongStream.of(
@@ -135,7 +139,7 @@ public class UserGroupModelListener extends BaseModelListener<UserGroup> {
 						() -> {
 							Message message = new Message();
 
-							message.put("groupId", s);
+							message.put("groupId", groupId);
 							message.put("userIds", userIdsTemp);
 
 							MessageBusUtil.sendMessage(
