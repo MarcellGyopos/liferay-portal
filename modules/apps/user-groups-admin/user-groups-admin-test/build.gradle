@@ -7,4 +7,11 @@ dependencies {
 	testIntegrationCompile project(":apps:users-admin:users-admin-test-util")
 	testIntegrationCompile project(":core:petra:petra-sql-dsl-api")
 	testIntegrationCompile project(":test:arquillian-extension-junit-bridge")
+	testCompile group: "com.liferay.portal", name: "com.liferay.portal.impl", version: "default"
+	testCompile group: "com.liferay.portal", name: "com.liferay.portal.kernel", version: "default"
+	testCompile project(":apps:blogs:blogs-api")
+	testCompile project(":apps:blogs:blogs-service")
+	testCompile project(":apps:layout:layout-test-util")
+	testCompile project(":apps:subscription:subscription-service")
+
 }
