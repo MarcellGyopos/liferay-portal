@@ -12,8 +12,11 @@
  * details.
  */
 
+
+
 package com.liferay.user.groups.admin.modellistener;
 
+import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.blogs.model.BlogsEntry;
 import com.liferay.blogs.service.BlogsEntryLocalServiceUtil;
 import com.liferay.layout.test.util.LayoutTestUtil;
@@ -30,15 +33,19 @@ import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.UserGroupTestUtil;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
+import com.liferay.portal.service.impl.UserGroupLocalServiceImpl;
 import com.liferay.portal.test.rule.Inject;
-import com.liferay.subscription.service.impl.SubscriptionLocalServiceImpl;
+import com.liferay.subscription.service.SubscriptionLocalService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * @author Marcell Gyöpös
  */
+
+@RunWith(Arquillian.class)
 public class UserGroupModelListenerTest {
 
 	@Before
@@ -50,10 +57,10 @@ public class UserGroupModelListenerTest {
 	public void testDeleteUsersFromGroupWhenUserDoesntHaveAnotherGroupAndDirectMembership()
 		throws Exception {
 
+
 		long[]  userIds = addUsers();
 		UserGroup standardUserGroup = UserGroupTestUtil.addUserGroup();
-
-		_userGroupLocalService.addUserUserGroup(userIds[0], standardUserGroup);
+		_userGroupLocalService.addUserUserGroup(userIds[0], standardUserGroup.getUserGroupId());
 
 		_groupLocalService.addUserGroupGroup(standardUserGroup.getGroupId(),group);
 
@@ -108,13 +115,13 @@ public class UserGroupModelListenerTest {
 	}
 
 	@Inject
-	private UserGroupLocalService _userGroupLocalService;
+	private UserGroupLocalService _userGroupLocalService = new UserGroupLocalServiceImpl();
 
 	@Inject
 	private GroupLocalService _groupLocalService;
 
 	@Inject
-	private SubscriptionLocalServiceImpl _subscriptionLocalService;
+	private SubscriptionLocalService _subscriptionLocalService;
 
 
 	@DeleteAfterTestRun
