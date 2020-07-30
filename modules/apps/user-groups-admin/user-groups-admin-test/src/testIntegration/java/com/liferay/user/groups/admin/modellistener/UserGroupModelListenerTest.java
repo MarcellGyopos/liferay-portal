@@ -24,22 +24,29 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserGroup;
+import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.portlet.PortletProvider;
 import com.liferay.portal.kernel.portlet.PortletProviderUtil;
 import com.liferay.portal.kernel.service.GroupLocalService;
+import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserGroupLocalService;
+import com.liferay.portal.kernel.service.UserGroupLocalServiceUtil;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserGroupTestUtil;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.service.impl.UserGroupLocalServiceImpl;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.subscription.service.SubscriptionLocalService;
-import org.junit.Assert;
+import com.liferay.subscription.service.SubscriptionLocalServiceUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.Map;
 
 /**
  * @author Marcell Gyöpös
@@ -60,23 +67,55 @@ public class UserGroupModelListenerTest {
 
 		long[]  userIds = addUsers();
 		UserGroup standardUserGroup = UserGroupTestUtil.addUserGroup();
-		_userGroupLocalService.addUserUserGroup(userIds[0], standardUserGroup.getUserGroupId());
+		UserGroupLocalServiceUtil.addUserUserGroup(userIds[0], standardUserGroup.getUserGroupId());
 
-		_groupLocalService.addUserGroupGroup(standardUserGroup.getGroupId(),group);
+		GroupLocalServiceUtil.addUserGroupGroup(standardUserGroup.getUserGroupId(),group);
 
-		_blogLayout = LayoutTestUtil.addLayout(group);
-
-		String portletId = PortletProviderUtil.getPortletId(
-			BlogsEntry.class.getName(), PortletProvider.Action.VIEW);
-
-		LayoutTestUtil.addPortletToLayout(_blogLayout, portletId);
+		addLayouts(false,false);
 
 		BlogsEntryLocalServiceUtil.subscribe(userIds[0], group.getGroupId());
 
-		_userGroupLocalService.deleteUserUserGroup(userIds[0],standardUserGroup);
+		UserGroupLocalServiceUtil.deleteUserUserGroup(userIds[0],standardUserGroup);
 
-		Assert.assertFalse(_subscriptionLocalService.isSubscribed(group.getCompanyId(),userIds[0],BlogsEntry.class.getName(),group.getGroupId()));
+		boolean anyad = SubscriptionLocalServiceUtil.isSubscribed(group.getCompanyId(),userIds[0],BlogsEntry.class.getName(),group.getGroupId());
 
+		String sanyi = "s";
+	}
+
+	protected void addLayouts(
+		boolean portletExists, boolean blogEntryWithDifferentGroup)
+		throws Exception {
+
+
+
+		_blogLayout = LayoutTestUtil.addLayout(group);
+		_assetLayout = LayoutTestUtil.addLayout(group);
+
+		if (portletExists) {
+			String portletId = PortletProviderUtil.getPortletId(
+				BlogsEntry.class.getName(), PortletProvider.Action.VIEW);
+
+			LayoutTestUtil.addPortletToLayout(_blogLayout, portletId);
+		}
+
+		Map<String, String[]> preferenceMap = HashMapBuilder.put(
+			"assetLinkBehavior", new String[] {"viewInPortlet"}
+		).build();
+
+		_testPortletId = PortletIdCodec.encode(
+			"com_liferay_hello_world_web_portlet_HelloWorldPortlet");
+
+		LayoutTestUtil.addPortletToLayout(
+			TestPropsValues.getUserId(), _assetLayout, _testPortletId,
+			"column-1", preferenceMap);
+
+		Group group2 = group;
+
+		if (blogEntryWithDifferentGroup) {
+			group2 = GroupTestUtil.addGroup();
+		}
+
+		_blogsEntryGroupId = group2.getGroupId();
 	}
 
 
@@ -130,6 +169,12 @@ public class UserGroupModelListenerTest {
 	private static long[] _userIds = new long[2];
 
 	private Layout _blogLayout;
+
+	private Layout _assetLayout;
+
+	private String _testPortletId;
+
+	private long _blogsEntryGroupId;
 
 
 }
