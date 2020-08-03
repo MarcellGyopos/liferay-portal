@@ -28,13 +28,14 @@ import com.liferay.portal.kernel.model.UserGroup;
 import com.liferay.portal.kernel.service.UserGroupLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.transaction.TransactionCommitCallbackUtil;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.LongStream;
+
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Marcell Gyöpös
@@ -44,8 +45,8 @@ public class UserGroupModelListener extends BaseModelListener<UserGroup> {
 
 	@Override
 	public void onBeforeRemoveAssociation(
-		Object userGroupId, String associationClassName,
-		Object associationClassPK)
+			Object userGroupId, String associationClassName,
+			Object associationClassPK)
 		throws ModelListenerException {
 
 		try {
@@ -112,13 +113,13 @@ public class UserGroupModelListener extends BaseModelListener<UserGroup> {
 				boolean siteContainsGroup = false;
 
 				for (Map.Entry<Long, long[]> entry :
-					userGroupGroupIds.entrySet()) {
+						userGroupGroupIds.entrySet()) {
 
 					if (LongStream.of(
-						entry.getValue()
-					).anyMatch(
-						x -> x == groupId
-					)) {
+							entry.getValue()
+						).anyMatch(
+							x -> x == groupId
+						)) {
 
 						siteContainsGroup = true;
 					}
