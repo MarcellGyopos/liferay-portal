@@ -27,6 +27,8 @@ import com.liferay.portal.kernel.model.UserGroup;
 import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.portlet.PortletProvider;
 import com.liferay.portal.kernel.portlet.PortletProviderUtil;
+import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
+import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserGroupLocalService;
@@ -105,8 +107,13 @@ public class UserGroupModelListenerTest {
 		_testPortletId = PortletIdCodec.encode(
 			"com_liferay_hello_world_web_portlet_HelloWorldPortlet");
 
+		User user = UserTestUtil.addUser(group.getGroupId());
+
+		PermissionThreadLocal.setPermissionChecker(
+			PermissionCheckerFactoryUtil.create(user));
+
 		LayoutTestUtil.addPortletToLayout(
-			TestPropsValues.getUserId(), _assetLayout, _testPortletId,
+			user.getUserId(), _assetLayout, _testPortletId,
 			"column-1", preferenceMap);
 
 		Group group2 = group;
