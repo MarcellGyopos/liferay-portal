@@ -29,6 +29,8 @@ AUI.add(
 
 		var INTEGER_MIN_VALUE = 0;
 
+		var containerType = null;
+
 		var INTEGER_MAX_VALUE = 2147483647;
 
 		var SELECTOR_REPEAT_BUTTONS =
@@ -925,13 +927,27 @@ AUI.add(
 					);
 				},
 
-				renderUI() {
+				renderUI(newValue) {
 					var instance = this;
-
+					if(!newValue){
 					if (instance.get('repeatable')) {
 						instance.renderRepeatableUI();
-						instance.syncRepeatablelUI();
+						var name = instance.getRepeatedSiblings()[0].get('name');
+
+						if(name !== containerType ){
+							containerType = name;
+
+						}else {
+							instance.syncRepeatablelUI();
+						}
 					}
+					}else{
+						if (instance.get('repeatable')) {
+							instance.renderRepeatableUI();
+							instance.syncRepeatablelUI();
+						}
+					}
+
 
 					instance.syncLabel(instance.get('displayLocale'));
 
@@ -4221,7 +4237,7 @@ AUI.add(
 					instance.repeatableInstances = {};
 
 					instance.bindUI();
-					instance.renderUI();
+					instance.renderUI(0);
 				},
 
 				moveField(parentField, oldIndex, newIndex) {
