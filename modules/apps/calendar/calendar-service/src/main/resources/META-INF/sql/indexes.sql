@@ -11,7 +11,7 @@ create index IX_14ADC52E on CalendarBooking (recurringCalendarBookingId);
 create index IX_A21D9FD5 on CalendarBooking (uuid_[$COLUMN_LENGTH:75$], companyId);
 create unique index IX_F4C61797 on CalendarBooking (uuid_[$COLUMN_LENGTH:75$], groupId);
 
-create index IX_7727A482 on CalendarNotificationTemplate (calendarId, notificationType[$COLUMN_LENGTH:75$], notificationTemplateType[$COLUMN_LENGTH:75$]);
+create index IX_7727A482 on CalendarNotificationTemplate (calendarId, notificationType[$COLUMN_LENGTH:150$], notificationTemplateType[$COLUMN_LENGTH:75$]);
 create index IX_4D7D97BD on CalendarNotificationTemplate (uuid_[$COLUMN_LENGTH:75$], companyId);
 create unique index IX_4012E97F on CalendarNotificationTemplate (uuid_[$COLUMN_LENGTH:75$], groupId);
 
