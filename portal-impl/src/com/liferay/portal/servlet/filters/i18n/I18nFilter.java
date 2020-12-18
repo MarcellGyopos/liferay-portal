@@ -68,6 +68,13 @@ public class I18nFilter extends BasePortalFilter {
 		_languageIds = Collections.unmodifiableSet(_languageIds);
 	}
 
+	public String getVirtualHostLanguageId(
+		HttpServletRequest httpServletRequest) {
+
+		return (String)httpServletRequest.getAttribute(
+			WebKeys.VIRTUAL_HOST_I18N_LANGUAGE_ID);
+	}
+
 	@Override
 	public boolean isFilterEnabled(
 		HttpServletRequest httpServletRequest,
@@ -312,8 +319,15 @@ public class I18nFilter extends BasePortalFilter {
 
 		String defaultLanguageId = getDefaultLanguageId(httpServletRequest);
 
+		String virtualHostLanguageId = getVirtualHostLanguageId(
+			httpServletRequest);
+
 		if (Validator.isNull(requestedLanguageId)) {
 			requestedLanguageId = defaultLanguageId;
+		}
+
+		if (virtualHostLanguageId != null) {
+			defaultLanguageId = virtualHostLanguageId;
 		}
 
 		if (prependFriendlyUrlStyle == 1) {
@@ -329,7 +343,7 @@ public class I18nFilter extends BasePortalFilter {
 			return requestedLanguageId;
 		}
 		else if (prependFriendlyUrlStyle == 3) {
-			if (user != null) {
+			if ((user != null) && (virtualHostLanguageId == null)) {
 				if (userLanguageId.equals(requestedLanguageId)) {
 					return null;
 				}
