@@ -333,6 +333,10 @@ public class WorkflowTaskDisplayContext {
 		ThemeDisplay themeDisplay =
 			_workflowTaskRequestHelper.getThemeDisplay();
 
+		String languageId = LocaleUtil.toLanguageId(getTaskContentLocale());
+
+		themeDisplay.setLanguageId(languageId);
+
 		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
 
 		_portletResource = ParamUtil.getString(
