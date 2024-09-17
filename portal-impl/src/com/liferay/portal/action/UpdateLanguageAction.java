@@ -226,7 +226,33 @@ public class UpdateLanguageAction implements Action {
 			redirect = redirect + queryString;
 		}
 
-		return redirect;
+		return adaptRedirectToVirtualHostLanguage(
+			locale, redirect,
+			(String)httpServletRequest.getAttribute(
+				WebKeys.VIRTUAL_HOST_I18N_LANGUAGE_ID));
+	}
+
+	protected String adaptRedirectToVirtualHostLanguage(
+		Locale locale, String redirect, String virtualHostI18nLanguageId) {
+
+		if ((PropsValues.LOCALE_PREPEND_FRIENDLY_URL_STYLE == 0) ||
+			Validator.isNull(virtualHostI18nLanguageId) ||
+			!redirect.startsWith(StringPool.SLASH)) {
+
+			return redirect;
+		}
+
+		if (locale.equals(
+				LocaleUtil.fromLanguageId(virtualHostI18nLanguageId))) {
+
+			return redirect;
+		}
+
+		if (redirect.endsWith(StringPool.SLASH)) {
+			redirect = redirect.substring(0, redirect.length() - 1);
+		}
+
+		return StringPool.SLASH + locale.toLanguageTag() + redirect;
 	}
 
 	protected boolean isFriendlyURLResolver(String layoutURL) {
